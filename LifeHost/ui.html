@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+
+<html lang='en' xmlns='http://www.w3.org/1999/xhtml'>
+<head>
+    <meta charset='utf-8' />
+    <title>Life</title>
+</head>
+<body>
+<div>
+    <div style='display: flex; margin: 3px;'>
+        <div>
+            <div id='playerColor'>____</div>
+        </div>
+        <div>
+            <label>Player</label>
+            <label id='playerLabel'>0</label>
+        </div>
+        <div>
+            <select id='preset'>
+                <option value='0'>Cell</option>
+                <option value='1'>Tub</option>
+                <option value='2'>Blinker</option>
+                <option value='3'>Beacon</option>
+                <option value='4'>Glider</option>
+                <option value='5'>SuperTub</option>
+                <option value='6'>Pentadecathlon</option>
+            </select>
+        </div>
+        <div>
+            <select id='scale'>
+                <option value='1' selected="selected">Large</option>
+                <option value='5'>Medium</option>
+                <option value='10'>Small</option>
+            </select>
+        </div>
+        <div>
+            <div id='errorLabel' style='display: none; color: red'>Connecting...</div>
+        </div>
+        <div>
+            <div id='infoLabel'></div>
+        </div>
+    </div>
+    <div style='display: flex;'>
+        <div>
+            <canvas width='1024' height='800' id='cnv' style='border: 2px solid black'>Update your browser</canvas>
+        </div>
+        <div>
+            <canvas width='150' height='800' id='cnvinfo'>Update your browser</canvas>
+        </div>
+    </div>
+</div>
+<script>
+
+    var playerColor = [##color##];
+    var player = ##player##;
+
+    // *** Initialization ***
+
+    document.addEventListener('DOMContentLoaded',
+        function () {
+            document.getElementById('playerLabel').innerHTML = player.toString();
+            document.getElementById('playerColor').style.backgroundColor = playerColor;
+        }
+    );
+
+    function log(msg) {
+        document.getElementById('infoLabel').innerHTML = msg;
+    }
+
+    // *** Get next step data ***
+
+    var intervalId = window.setInterval(processNextStep, 1000);
+
+    function processNextStep() {
+        //clearInterval(intervalId);
+        ajaxRequest('/api/life/getnextstep?data=' + player, processData);
+    }
+
+    function ajaxRequest(url, successHandler) {
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (xhttp.readyState === XMLHttpRequest.DONE) {
+                var errorLabel = document.getElementById('errorLabel');
+                if (xhttp.status === 200) {
+                    errorLabel.style.display = 'none';
+                    successHandler(xhttp.responseText);
+                } else {
+                    errorLabel.style.display = '';
+                }
+            }
+        };
+        xhttp.open('GET', url, true);
+        xhttp.send(null);
+    }
+
+    // *** Canvas ***
+
+    var cnvinfo = document.getElementById('cnvinfo');
+    var ctxinfo = cnvinfo.getContext('2d');
+
+    var cnv = document.getElementById('cnv');
+    var ctx = cnv.getContext('2d');
+
+    function getMousePos(cnv, evt) {
+        var rect = cnv.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+
+    cnv.addEventListener('mouseup', function (evt) {
+
+        var mousePos = getMousePos(cnv, evt);
+        var preset = document.getElementById('preset').selectedIndex;
+        var data = [parseInt(mousePos.x / curMult), parseInt(mousePos.y / curMult), preset, player].join();
+         ajaxRequest('/api/life/SendData?data=' + data, processData);
+    }, false);
+
+    // *** Draw the  world ***
+
+    var curMult = getMult();
+
+    function getMult() {
+        var opt = document.getElementById('scale');
+        return opt.options[opt.selectedIndex].value;
+    }
+
+    function processData(data) {
+
+        if (data === '"' || data === '""')
+            return;
+
+        var arr = data.split(':');
+        drawWorld(arr[0].replace('"', '').split(','));
+        showInfo(arr[1].replace('"', '').split(','));
+    }
+
+    function showInfo(arr) {
+
+        if (arr.length < 3)
+            return;
+
+        ctxinfo.clearRect(0, 0, cnvinfo.width, cnvinfo.height);
+
+        var i = 0;
+
+        while (true) {
+
+            var pid = arr[i];
+            i++;
+            var clr = arr[i];
+            i++;
+            var pwr = arr[i];
+            i++;
+
+            ctxinfo.fillStyle = clr;
+            ctxinfo.font = '14pt Tahoma';
+            ctxinfo.fillText('Player ' + pid, 10, i * 15);
+            ctxinfo.fillStyle = 'black';
+            ctxinfo.fillText(pwr, 95, i * 15);
+
+            if (arr[i + 1] == undefined)
+                break;
+        }
+    }
+
+    var dict = {};
+
+    function drawWorld(arr) {
+
+        var getKey = function (x, y) { return (x * 1000000).toString() + y.toString(); };
+
+        var mult = getMult();
+
+        if (curMult !== mult) {
+            curMult = mult;
+            ctx.clearRect(0, 0, cnv.width, cnv.height);
+        }
+
+        var old = dict;
+        dict = {};
+
+        var i = 0;
+
+        while (true) {
+
+            var cellX = Number(arr[i]);
+            i++;
+            var cellY = Number(arr[i]);
+            i++;
+            var color = arr[i];
+            i++;
+            var pid = arr[i];
+            i++;
+
+            ctx.fillStyle = color;
+            ctx.stroke();
+
+            ctx.fillRect(cellX * mult, cellY * mult, mult, mult);
+
+            var key = getKey(cellX, cellY);
+
+            if (old[key] != null)
+                delete old[key];
+
+            dict[key] = [cellX, cellY];
+            
+            if (i > arr.length)
+                break;
+        }
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.stroke();
+
+        for (var k in old)
+            ctx.fillRect(old[k][0] * mult, old[k][1] * mult, mult, mult);
+    }
+
+
+</script>
+</body>
+</html>
