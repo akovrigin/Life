@@ -9,8 +9,7 @@ c:\Projects\Life\LifeHost\bin\Debug\Newtonsoft.Json.xml
 c:\Projects\Life\LifeHost\bin\Debug\System.Net.Http.Formatting.xml
 c:\Projects\Life\LifeHost\bin\Debug\System.Web.Http.xml
 c:\Projects\Life\LifeHost\bin\Debug\System.Web.Http.SelfHost.xml
-c:\Projects\Life\LifeHost\obj\Debug\LifeHost.exe
-c:\Projects\Life\LifeHost\obj\Debug\LifeHost.pdb
-C:\Projects\Life\LifeHost\obj\Debug\LifeHost.csprojResolveAssemblyReference.cache
 c:\Projects\Life\LifeHost\obj\Debug\LifeHost.Properties.Resources.resources
 c:\Projects\Life\LifeHost\obj\Debug\LifeHost.csproj.GenerateResource.Cache
+c:\Projects\Life\LifeHost\obj\Debug\LifeHost.exe
+c:\Projects\Life\LifeHost\obj\Debug\LifeHost.pdb
