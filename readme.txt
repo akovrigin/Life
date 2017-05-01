@@ -1,6 +1,6 @@
 Conway's Game of Life
 
-Problem: realisation the game "Conway's Game of Life"
+Problem: realization the game "Conway's Game of Life"
 Description: https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
 
 Source code: https://github.com/akovrigin/Life
